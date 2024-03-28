@@ -1,0 +1,33 @@
+
+body {
+    background-color: black;
+    color: white;
+  }
+
+.uspath {
+  stroke: white;
+  fill: none;
+  fill-opacity: 0.6;
+  stroke-width: 5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.section{
+  text-align: center;
+}
+#button_list{
+  text-align: center;
+}
+.button{
+  background-color: gray;
+  opacity: 0.6;
+  padding: 16px 32px;
+}
+.button:hover{
+  opacity: 1;
+}
+.button:active {
+  background-color: lightgray;
+  box-shadow: 0 1px #666;
+  transform: translateY(2px);
+}
