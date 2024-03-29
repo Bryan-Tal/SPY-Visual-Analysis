@@ -291,12 +291,12 @@ function barPlot(data){
     })
     groupedByWeekday = groupedByWeekday.slice(1,5).concat(groupedByWeekday[0])
     var xScale = d3.scaleBand().domain(groupedByWeekday.map(function(d){return d.day})).range([margin.left,width - margin.right*3]);
-    var yScale = d3.scaleLinear().domain([1, 2]).range([height/1.19 - margin.top,margin.bottom]);
+    var yScale = d3.scaleLinear().domain([1, 2]).range([height/1.25 - margin.top,margin.bottom]);
 
     // creating x-axis
     svg.append("g")
     // .tickSize(0) removes tick marks from viz
-    .attr("transform","translate("+0+","+ ((height/1.25) + margin.top/2)+")")
+    .attr("transform","translate("+0+","+ ((height/1.25) - margin.top )+")")
     .call(d3.axisBottom(xScale).ticks(5))//.tickSize(0))
     // this removes the "domain line" from the axis
     // .call(g => g.select(".domain").remove())
@@ -360,15 +360,24 @@ function barPlot(data){
         .attr("y", margin.top*4 + (margin.left / 2))
         .attr("text-anchor","right")
         .style("font-size","24px")
-        .text("This chart shows the sum of all trading volume per weekday. Based on this, it appears that more trading occurs during Wednesdays and Thursdays")
+        .text("This chart shows the sum of all trading volume per weekday. Most stock trading occurs after Wednesday.")
         .style("fill","white")
     svg.append("text")
         .attr("x", margin.left * 2)
         .attr("y", margin.top*5.5 + (margin.left / 2))
         .attr("text-anchor","right")
         .style("font-size","24px")
-        .text("this makes sense given that a lot of financial data, such as Federal Open Market Committee (FOMC) meeting notes, is released on these days")
+        .text("Consumer Product Index (CPI) Data and Federal Open Market Committee (FOMC) notes are released earlier in the week.")
+        // , giving both institutional and retail traders information that allows them to add or removed shares from their current holdings.
         .style("fill","white")
+            svg.append("text")
+        .attr("x", margin.left * 2)
+        .attr("y", margin.top*7 + (margin.left / 2))
+        .attr("text-anchor","right")
+        .style("font-size","24px")
+        .text("This gives both institutional and retail traders information that allows them to add or remove shares from their current holdings.")
+        .style("fill","white")
+    
 }
 
 
@@ -504,7 +513,7 @@ function boxPlot(data){
             year_data:d[1]
         }
     })
-    console.log(mappedYear)
+    // console.log(mappedYear)
   // Compute quartiles, median, inter quantile range min and max --> these info are then used to draw the box.
   const sumstat = d3.groups(data, d => d.Year) 
     .map((d) => {
@@ -523,7 +532,7 @@ function boxPlot(data){
     
     // Show the X scale
     const x = d3.scaleBand()
-        .range([margin.left,width - margin.right])
+        .range([margin.left, width - margin.right - margin.left])
         .domain(dateArray)
         .paddingInner(1)
         .paddingOuter(0.5);
@@ -534,7 +543,7 @@ function boxPlot(data){
     // Show the Y scale
     const y = d3.scaleLinear()
         .domain([0, 500])
-        .range([height/1.19 - margin.top,margin.bottom]);
+        .range([height/1.18 - margin.top,margin.bottom]);
         svg.append("g")
         .attr("transform","translate("+margin.left+","+ 0+")")
         .call(d3.axisLeft(y))
@@ -571,7 +580,7 @@ function boxPlot(data){
         .style("stroke-width", 1);
 
     // Rectangle for the main box
-    const boxWidth = 50;
+    const boxWidth = 25;
     svg
         .selectAll("boxes")
         .data(sumstat)
@@ -581,7 +590,72 @@ function boxPlot(data){
         .attr("height", d => y(d.value.q1) - y(d.value.q3))
         .attr("width", boxWidth)
         .attr("stroke", "white")
-        .style("fill", "steelblue");
+        .style("fill", "steelblue")
+        .on('mouseover', function(d,i){
+            console.log(i)
+            var xPos = parseFloat(d3.select(this).attr("x"));
+            var yPos = parseFloat(d3.select(this).attr("y"));
+            svg.append("rect").attr("id","tooltipR").attr("x",function(){
+                if (width - xPos < margin.left*5) {
+                    console.log('here!')
+                    return (xPos - margin.right*3.5 + margin.left/6)
+                }else{
+                    return (xPos +  margin.left/2)
+                }
+            })
+                .attr("y",yPos - 50)
+                .attr("height",45).attr("width",150).attr("rx",2).attr("ry",3).style("fill","lightgray");
+
+            svg.append("text")
+                .attr("id", "tooltip1")
+                .attr("x",function(){
+                    if (width - xPos < margin.left*5) {
+                        console.log('here!')
+                        return (xPos - margin.right*3.5 )
+                    }else{
+                        return (xPos + margin.left/2.5)
+                    }
+                })
+                .attr("y", yPos - 65)
+                .attr("text-anchor", "middle")
+                .attr("font-family", "comic-sans")
+                .attr("font-size", "15px")
+                .attr("font-weight", "bold")
+                .attr("fill", "black")
+                .attr("dy","2.5em")
+                .attr("dx", "5.5em")
+                .text("Year " + i.key)
+                .attr("pointer-events","none");
+
+            svg.append("text")
+                .attr("id", "tooltip")
+                .attr("x",function(){
+                    if (width - xPos < margin.left*5) {
+                        console.log('here!')
+                        return (xPos - margin.right*3.5)
+                    }else{
+                        return (xPos + margin.left/2.5)
+                    }
+                })
+                .attr("y", yPos - 50)
+                .attr("text-anchor", "middle")
+                .attr("font-family", "comic-sans")
+                .attr("font-size", "15px")
+                .attr("font-weight", "bold")
+                .attr("fill", "black")
+                .attr("dy","2.5em")
+                .attr("dx", "5.5em")
+                .text(" Low: $" + Math.round(i.value.min) + " High: $" + Math.round(i.value.max) )
+                .attr("pointer-events","none");
+            
+        })
+        .on('mouseout', function(d) {
+            // removes tooltip once mouse isn't in that section
+            d3.select("#tooltip").remove();
+            d3.select("#tooltip1").remove();
+            d3.select("#tooltipR").remove();
+
+          })
 
     // Show the median
     svg
@@ -607,7 +681,7 @@ function boxPlot(data){
     // .attr("class", "x label")
         .attr("text-anchor", "middle")
         .attr("x", (width-margin.right)/2 )
-        .attr("y", height-margin.top*4)
+        .attr("y", height-margin.top*3)
         .style("font-size","24px")
         .text("Year")
         .style("fill","white");
@@ -625,42 +699,50 @@ function boxPlot(data){
         .style("fill","white")
     svg.append("text")
         .attr("x", margin.left * 2)
-        .attr("y", margin.top*4 + (margin.left / 2))
+        .attr("y", margin.top * 4 + (margin.left / 2))
         .attr("text-anchor","right")
         .style("font-size","24px")
-        .text("This is a representation of the SPY's price range for any given year. Note how the price was very stagnant until 2002's low was broken in 2009.")
+        .text("This is a representation of the SPY's price range for any given year.")
+        .style("fill","white")
+    // Note how the price was very stagnant until 2002's low was broken in 2009.
+    svg.append("text")
+        .attr("x", margin.left * 2)
+        .attr("y", margin.top * 5.5 + (margin.left / 2))
+        .attr("text-anchor","right")
+        .style("font-size","24px")
+        .text("After 2009 tested the low that was set in 2002, the price kept pushing higher, breaking the high made in 2008.")
         .style("fill","white")
     svg.append("text")
         .attr("x", margin.left * 2)
-        .attr("y", margin.top*5.5 + (margin.left / 2))
+        .attr("y", margin.top * 7 + (margin.left / 2))
         .attr("text-anchor","right")
         .style("font-size","24px")
-        .text("After this, the price kept pushing higher, breaking the high made in 2008, due to the value of many companies within the SPY increasing rapidly during this time ")
+        .text("This was due to the value of most companies within the SPY increasing rapidly during this time.")
         .style("fill","white")
 
 }
 
-function geoPlot(data){
-    var svg = d3.select("#plot")
-        .append("svg").attr("width", width).
-        attr("height", height);
+// function geoPlot(data){
+//     var svg = d3.select("#plot")
+//         .append("svg").attr("width", width).
+//         attr("height", height);
 
-    const projection = d3.geoAlbersUsa()
-        .scale(1500)
-        .translate([width/2, height/2]) //chain translate and scale
-    const pathgeo1 = null
+//     const projection = d3.geoAlbersUsa()
+//         .scale(1500)
+//         .translate([width/2, height/2]) //chain translate and scale
+//     const pathgeo1 = null
     
-    const statesmap = d3.json("us-states.json");
-    statesmap.then(function (map){
-        console.log(map);
-        var path = d3.geoPath()
-        .projection(projection);
-        svg.selectAll("path").attr("class","uspath").data(map.features).enter().append('path')
-        .attr("d", path)
-        .attr("fill","gray");
-    });
-    return console.log("This is a geo plot");
-}
+//     const statesmap = d3.json("us-states.json");
+//     statesmap.then(function (map){
+//         console.log(map);
+//         var path = d3.geoPath()
+//         .projection(projection);
+//         svg.selectAll("path").attr("class","uspath").data(map.features).enter().append('path')
+//         .attr("d", path)
+//         .attr("fill","gray");
+//     });
+//     return console.log("This is a geo plot");
+// }
 
 function introduce(){
     removeCurrentViz();
@@ -672,7 +754,7 @@ function introduce(){
         .attr("y", margin.top + (margin.left / 2))
         .attr("text-anchor","middle")
         .style("font-size","24px")
-        .text("Welcome To My DSC 106 Project! I will be exploring various aspects of the S&P 500 Exchange Traded Fund, better known as the SPY")
+        .text("Welcome To My DSC 106 Project! I will be exploring various aspects of the S&P 500 E.T.F., better known as the SPY")
         .style("fill","white")
 
     svg.append("text")
