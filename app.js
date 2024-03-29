@@ -754,7 +754,7 @@ function introduce(){
         .attr("y", margin.top + (margin.left / 2))
         .attr("text-anchor","middle")
         .style("font-size","24px")
-        .text("Welcome To My DSC 106 Project! I will be exploring various aspects of the S&P 500 E.T.F., better known as the SPY")
+        .text("Welcome to my Visual Analysis of the SPY! I will be exploring various aspects of the S&P 500 E.T.F., better known as the SPY")
         .style("fill","white")
 
     svg.append("text")
